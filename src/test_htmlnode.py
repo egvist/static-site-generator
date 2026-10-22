@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_props_to_html(self):
@@ -59,6 +59,72 @@ class TestLeafNode(unittest.TestCase):
             node.to_html(),
             "<b>Bold text</b>"
         )
+
+class TestParentNode(unittest.TestCase):
+
+    def test_to_html_with_children(self):
+        child = LeafNode("span", "child")
+        parent = ParentNode("div", [child])
+
+        self.assertEqual(
+            parent.to_html(),
+            "<div><span>child</span></div>"
+        )
+
+    def test_to_html_with_grandchildren(self):
+        grandchild = LeafNode("b", "grandchild")
+        child = ParentNode("span", [grandchild])
+        parent = ParentNode("div", [child])
+
+        self.assertEqual(
+            parent.to_html(),
+            "<div><span><b>grandchild</b></span></div>"
+        )
+
+    def test_multiple_children(self):
+        parent = ParentNode(
+            "p",
+            [
+                LeafNode("b", "Bold"),
+                LeafNode(None, " normal "),
+                LeafNode("i", "Italic")
+            ]
+        )
+
+        self.assertEqual(
+            parent.to_html(),
+            "<p><b>Bold</b> normal <i>Italic</i></p>"
+        )
+
+    def test_props(self):
+        parent = ParentNode(
+            "div",
+            [LeafNode("p", "Hello")],
+            {"class": "container"}
+        )
+
+        self.assertEqual(
+            parent.to_html(),
+            '<div class="container"><p>Hello</p></div>'
+        )
+
+    def test_no_tag(self):
+        parent = ParentNode(None, [LeafNode("p", "Hello")])
+
+        with self.assertRaises(ValueError):
+            parent.to_html()
+
+    def test_no_children(self):
+        parent = ParentNode("div", [])
+
+        with self.assertRaises(ValueError):
+            parent.to_html()
+
+    def test_none_children(self):
+        parent = ParentNode("div", None)
+
+        with self.assertRaises(ValueError):
+            parent.to_html()
 
 if __name__ == "__main__":
     unittest.main()
