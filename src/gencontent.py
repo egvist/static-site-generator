@@ -10,7 +10,8 @@ def extract_title(markdown: str) -> str:
     raise ValueError("No H1 heading found in markdown")
 
 
-def generate_page(from_path, template_path, dest_path):
+
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     print(
         f"Generating page from {from_path} "
         f"to {dest_path} using {template_path}"
@@ -34,6 +35,10 @@ def generate_page(from_path, template_path, dest_path):
     page = template.replace("{{ Title }}", title)
     page = page.replace("{{ Content }}", html_content)
 
+    # YENİ: GitHub Pages için basepath ekle
+    page = page.replace('href="/', f'href="{basepath}')
+    page = page.replace('src="/', f'src="{basepath}')
+
     # 6. Hedef klasörü oluştur
     destination_dir = os.path.dirname(dest_path)
 
@@ -46,7 +51,9 @@ def generate_page(from_path, template_path, dest_path):
 
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath="/"):
+    
     for item in os.listdir(dir_path_content):
         source_path = os.path.join(dir_path_content, item)
         destination_path = os.path.join(dest_dir_path, item)
@@ -55,7 +62,8 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             generate_pages_recursive(
                 source_path,
                 template_path,
-                destination_path
+                destination_path,
+                basepath
             )
 
         elif os.path.isfile(source_path) and item.endswith(".md"):
@@ -64,5 +72,6 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
             generate_page(
                 source_path,
                 template_path,
-                destination_path
+                destination_path,
+                basepath
             )
